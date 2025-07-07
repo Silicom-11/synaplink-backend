@@ -1,20 +1,12 @@
-const express = require('express');
+require('dotenv').config();
 const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
 
-dotenv.config();
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-const authRoutes = require('./routes/authRoutes');
-app.use('/api/auth', authRoutes);
-
-mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => {
-  console.log('MongoDB conectado');
-  app.listen(5000, () => console.log('Servidor en puerto 5000'));
-}).catch(err => console.log(err));
+  console.log('Conectado a MongoDB Atlas');
+}).catch(err => {
+  console.error('Error al conectar a MongoDB:', err.message);
+});
+
