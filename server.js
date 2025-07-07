@@ -1,24 +1,22 @@
 const express = require('express');
 const mongoose = require('mongoose');
-require('dotenv').config();
+const dotenv = require('dotenv');
+const cors = require('cors');
 
+dotenv.config();
 const app = express();
-const port = process.env.PORT || 3000; // Render define PORT automáticamente
-
-// Middleware y rutas
-app.use(express.json());
-
-// Aquí deberías tener tus rutas como:
-// app.use('/api', require('./routes/userRoutes'));
+const PORT = process.env.PORT || 3000;
 
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('Conectado a MongoDB Atlas');
+  .then(() => console.log('Conectado a MongoDB Atlas'))
+  .catch((err) => console.error('Error de conexión', err));
 
-    // Solo escucha después de conectarse exitosamente
-    app.listen(port, () => {
-      console.log(`Servidor corriendo en el puerto ${port}`);
-    });
-  })
-  .catch(err => console.error(err));
+app.use(cors());
+app.use(express.json());
 
+// Rutas
+app.use('/api/auth', require('./routes/authRoutes'));
+
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en el puerto ${PORT}`);
+});
