@@ -20,3 +20,8 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
+
+// Esto va al final, después de todas tus rutas
+app.use((req, res) => {
+  res.status(404).json({ message: 'Ruta no encontrada' });
+});
