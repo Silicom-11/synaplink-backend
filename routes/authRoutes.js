@@ -54,25 +54,25 @@ router.post('/register', async (req, res) => {
 
 // Login
 router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
     try {
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Email y contraseña son obligatorios' });
-        }
-
+        // Buscar usuario por correo
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ message: 'Usuario no encontrado' });
+            return res.status(401).json({ message: 'Usuario no encontrado' });
         }
 
-        if (user.password !== password) {
-            return res.status(400).json({ message: 'Contraseña incorrecta' });
+        // Comparar contraseña en texto plano con el hash guardado
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Contraseña incorrecta' });
         }
 
-        res.status(200).json({ message: 'Login exitoso' });
+        // Si todo va bien, puedes generar un token o simplemente responder OK
+        res.status(200).json({ message: 'Login exitoso', username: user.username });
     } catch (error) {
-        console.error('Error en login:', error);
+        console.error(error);
         res.status(500).json({ message: 'Error en el servidor' });
     }
 });
