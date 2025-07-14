@@ -70,7 +70,7 @@ router.post('/login', async (req, res) => {
         }
 
         // Si todo va bien, puedes generar un token o simplemente responder OK
-        res.status(200).json({ message: 'Login exitoso', username: user.username });
+        res.status(200).json({ message: 'Login exitoso', username: user.username, gender: user.gender, });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error en el servidor' });
