@@ -78,4 +78,24 @@ router.post('/login', async (req, res) => {
 });
 
 
+router.post('/reset-password', async (req, res) => {
+  const { username, email, newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({ username, email });
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado con ese correo y nombre' });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    await user.save();
+
+    res.status(200).json({ message: 'Contraseña actualizada correctamente' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error en el servidor' });
+  }
+});
+
 module.exports = router;
