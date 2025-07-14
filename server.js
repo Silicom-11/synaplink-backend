@@ -7,9 +7,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Conectado a MongoDB Atlas'))
-  .catch((err) => console.error('Error de conexión', err));
+mongoose.connect(process.env.MONGODB_URI, {
+  dbName: 'autocabina_db',
+})
+  .then(() => console.log('✅ Conectado a MongoDB Atlas correctamente'))
+  .catch((err) => console.error('❌ Error de conexión a MongoDB:', err));
 
 app.use(cors());
 app.use(express.json());
