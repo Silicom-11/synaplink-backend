@@ -24,7 +24,7 @@ const reservaSchema = new mongoose.Schema({
         required: true
     },
     precio: {
-        type: Number,
+        type: String,
         required: true
     },
     puntosGanados: {
