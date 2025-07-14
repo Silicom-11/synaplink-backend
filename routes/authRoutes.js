@@ -1,18 +1,47 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const authController = require('../controllers/authController');
 
 // Registro
 router.post('/register', async (req, res) => {
-    const { email, password } = req.body;
+    const {
+        username,
+        firstName,
+        lastName,
+        gender,
+        birthDate,
+        email,
+        password
+    } = req.body;
 
     try {
-        const userExist = await User.findOne({ email });
-        if (userExist) {
-            return res.status(400).json({ message: 'El usuario ya existe' });
+        // Verifica campos requeridos
+        if (!username || !firstName || !lastName || !email || !password) {
+            return res.status(400).json({ message: 'Faltan campos obligatorios' });
         }
 
-        const newUser = new User({ email, password });
+        // Verifica si ya existe usuario con ese correo o nombre de usuario
+        const existingUser = await User.findOne({
+            $or: [{ email }, { username }]
+        });
+        if (existingUser) {
+            return res.status(400).json({ message: 'El correo o el nombre de usuario ya están registrados' });
+        }
+
+        // Encriptar la contraseña
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = new User({
+            username,
+            firstName,
+            lastName,
+            gender,
+            birthDate,
+            email,
+            password: hashedPassword
+        });
+
         await newUser.save();
 
         res.status(201).json({ message: 'Usuario creado correctamente' });
