@@ -1,9 +1,10 @@
 const Reserva = require('../models/Reserva');
+const User = require('../models/User'); // Asegúrate de importar el modelo de usuario
 
 exports.crearReserva = async (req, res) => {
   try {
     const {
-      userId,
+      username,
       cabinas,
       fecha,
       horaInicio,
@@ -12,8 +13,14 @@ exports.crearReserva = async (req, res) => {
       puntosGanados
     } = req.body;
 
+    // 🔍 Buscar el userId basado en el username
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
     const nuevaReserva = new Reserva({
-      userId,
+      userId: user._id, // ✅ usa el ObjectId del usuario
       cabinas,
       fecha,
       horaInicio,
