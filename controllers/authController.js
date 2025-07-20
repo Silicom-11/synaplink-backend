@@ -1,6 +1,9 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // Agrega esto a tu .env
 
 exports.register = async (req, res) => {
   try {
@@ -9,7 +12,6 @@ exports.register = async (req, res) => {
       email, password
     } = req.body;
 
-    // Validación básica
     if (!username || !firstName || !lastName || !email || !password) {
       return res.status(400).json({ message: 'Campos requeridos faltantes' });
     }
@@ -56,5 +58,49 @@ exports.login = async (req, res) => {
     res.status(200).json({ token, userId: user._id, email: user.email });
   } catch (err) {
     res.status(500).json({ msg: 'Error en el servidor' });
+  }
+};
+
+// 🔐 Iniciar sesión o registrarse con Google
+exports.loginWithGoogle = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, given_name, family_name, sub } = payload;
+
+    let user = await User.findOne({ email });
+
+    // Si no existe, crear usuario automático
+    if (!user) {
+      user = new User({
+        username: `google_${sub}`,
+        firstName: given_name,
+        lastName: family_name,
+        email,
+        password: await bcrypt.hash(sub, 10), // Valor dummy, ya que se usa Google
+      });
+      await user.save();
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '3h',
+    });
+
+    res.status(200).json({
+      token,
+      userId: user._id,
+      email: user.email,
+      firstName: user.firstName,
+    });
+
+  } catch (error) {
+    console.error('Google login error:', error);
+    res.status(401).json({ msg: 'Token de Google inválido' });
   }
 };
