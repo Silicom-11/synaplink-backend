@@ -3,10 +3,10 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const authController = require('../controllers/authController');
-const { googleLogin } = require('../controllers/authController');
+const { loginWithGoogle } = require('../controllers/authController');
 
 // Ruta: Login con Google
-router.post('/google', googleLogin);
+router.post('/google', loginWithGoogle);
 
 // Registro
 router.post('/register', async (req, res) => {
