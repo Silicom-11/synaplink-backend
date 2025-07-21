@@ -63,15 +63,9 @@ exports.login = async (req, res) => {
 
 // 🔐 Iniciar sesión o registrarse con Google
 exports.loginWithGoogle = async (req, res) => {
-  const { idToken } = req.body;
-
-  // 🔐 Validar que recibimos el token
-  if (!idToken) {
-    console.error('❌ No se recibió idToken en el backend');
-    return res.status(400).json({ message: 'No se recibió idToken' });
-  }
-
   try {
+    const { idToken } = req.body;
+
     const ticket = await client.verifyIdToken({
       idToken,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -82,16 +76,14 @@ exports.loginWithGoogle = async (req, res) => {
 
     let user = await User.findOne({ email });
 
+    // Si no existe, crear usuario automático
     if (!user) {
       user = new User({
         username: `google_${sub}`,
         firstName: given_name,
         lastName: family_name,
         email,
-        password: await bcrypt.hash(sub, 10), // dummy
-        gender: 'Otro', // default
-        points: 0,
-        isGoogle: true,
+        password: await bcrypt.hash(sub, 10), // Valor dummy, ya que se usa Google
       });
       await user.save();
     }
@@ -106,9 +98,9 @@ exports.loginWithGoogle = async (req, res) => {
       email: user.email,
       firstName: user.firstName,
     });
+
   } catch (error) {
     console.error('Google login error:', error);
     res.status(401).json({ msg: 'Token de Google inválido' });
   }
 };
-
