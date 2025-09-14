@@ -97,8 +97,8 @@ exports.loginWithGoogle = async (req, res) => {
       console.log('🆕 Creating new user for email:', email);
       user = new User({
         username: `google_${sub}`,
-        firstName: given_name,
-        lastName: family_name,
+        firstName: given_name || 'Usuario',
+        lastName: family_name || 'Google', // Valor por defecto si no viene family_name
         email,
         password: await bcrypt.hash(sub, 10), // Valor dummy, ya que se usa Google
       });
