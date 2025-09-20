@@ -149,10 +149,13 @@ exports.loginWithGoogle = async (req, res) => {
 
     console.log('🎉 Login successful, sending response for user:', user.email);
     res.status(200).json({
+      _id: user._id,        // Para compatibilidad con app
+      userId: user._id,     // Campo actual
+      id: user._id,         // Campo adicional de compatibilidad
       token,
-      userId: user._id,
       email: user.email,
       firstName: user.firstName,
+      username: user.username || `google_${sub}`,
       gender: user.gender, // ✨ Enviar género en la respuesta
     });
 
