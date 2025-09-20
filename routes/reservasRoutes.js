@@ -214,4 +214,33 @@ router.post('/liberar-cabinas', async (req, res) => {
   }
 });
 
+// Limpiar y reinicializar cabinas (solo para desarrollo)
+router.post('/limpiar-cabinas', async (req, res) => {
+  try {
+    // Eliminar todas las cabinas
+    const deleted = await Cabina.deleteMany({});
+    console.log(`🗑️ Eliminadas ${deleted.deletedCount} cabinas`);
+
+    // Crear 8 cabinas limpias
+    const cabinasData = [];
+    for (let i = 1; i <= 8; i++) {
+      cabinasData.push({
+        numero: i,
+        estado: 'Libre',
+        cybercafe: 'Silicom Lan Center'
+      });
+    }
+
+    const nuevasCabinas = await Cabina.insertMany(cabinasData);
+    res.json({ 
+      message: 'Base de datos limpiada y reinicializada', 
+      eliminadas: deleted.deletedCount,
+      creadas: nuevasCabinas.length 
+    });
+  } catch (error) {
+    console.error('Error al limpiar cabinas:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 module.exports = router;
