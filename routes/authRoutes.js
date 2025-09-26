@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const authController = require('../controllers/authController');
 const { loginWithGoogle } = require('../controllers/authController');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwt';
+const JWT_EXPIRES = process.env.JWT_EXPIRES || '3h';
 
 // Ruta: Login con Google
 router.post('/google', loginWithGoogle);
@@ -44,9 +48,20 @@ router.post('/register', async (req, res) => {
             password: hashedPassword
         });
 
-        await newUser.save();
+                await newUser.save();
 
-        res.status(201).json({ message: 'Usuario creado correctamente' });
+                // Generar token
+                const token = jwt.sign({ id: newUser._id }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
+
+                // Set cookie httpOnly para web
+                res.cookie('token', token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 3 * 60 * 60 * 1000, // 3 horas
+                });
+
+                res.status(201).json({ message: 'Usuario creado correctamente', token, user: { _id: newUser._id, username: newUser.username, email: newUser.email } });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error en el servidor' });
@@ -68,10 +83,21 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Contraseña incorrecta' });
         }
 
+        // Generar token
+        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
+
+        // Set cookie httpOnly
+        res.cookie('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 3 * 60 * 60 * 1000, // 3 horas
+        });
+
         res.status(200).json({
             message: 'Login exitoso',
-            username: user.username,
-            gender: user.gender,
+            token,
+            user: { _id: user._id, username: user.username, email: user.email, gender: user.gender }
         });
     } catch (error) {
         console.error(error);

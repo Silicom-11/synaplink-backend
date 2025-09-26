@@ -4,6 +4,7 @@ const router = express.Router();
 const Cabina = require('../models/Cabina');
 const Reserva = require('../models/Reserva');
 const User = require('../models/User');
+const authMiddleware = require('../middleware/auth');
 
 // Inicializar cabinas (solo ejecutar una vez)
 router.post('/inicializar-cabinas', async (req, res) => {
@@ -69,7 +70,7 @@ router.get('/cabinas-disponibles', async (req, res) => {
 });
 
 // Reservar cabinas temporalmente (mientras se procesa el pago)
-router.post('/reservar-temporal', async (req, res) => {
+router.post('/reservar-temporal', authMiddleware, async (req, res) => {
   try {
     const { userId, cabinas, fechaInicio, fechaFin, precio } = req.body;
     
@@ -115,7 +116,7 @@ router.post('/reservar-temporal', async (req, res) => {
 });
 
 // Crear reserva completa (después del pago)
-router.post('/crear-reserva', async (req, res) => {
+router.post('/crear-reserva', authMiddleware, async (req, res) => {
   try {
     const { 
       userId, 
@@ -173,7 +174,7 @@ router.post('/crear-reserva', async (req, res) => {
 });
 
 // Obtener reservas del usuario
-router.get('/mis-reservas/:userId', async (req, res) => {
+router.get('/mis-reservas/:userId', authMiddleware, async (req, res) => {
   try {
     const { userId } = req.params;
     
@@ -191,7 +192,7 @@ router.get('/mis-reservas/:userId', async (req, res) => {
 });
 
 // Liberar cabinas (cuando termina la reserva)
-router.post('/liberar-cabinas', async (req, res) => {
+router.post('/liberar-cabinas', authMiddleware, async (req, res) => {
   try {
     const { cabinas } = req.body;
     
