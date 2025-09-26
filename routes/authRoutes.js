@@ -54,12 +54,14 @@ router.post('/register', async (req, res) => {
                 const token = jwt.sign({ id: newUser._id }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
 
                 // Set cookie httpOnly para web
-                res.cookie('token', token, {
+                const cookieOptions = {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'lax',
+                    // Para permitir cookies cross-site en producción (frontend en http://localhost:5173 apuntando al backend en https)
+                    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
                     maxAge: 3 * 60 * 60 * 1000, // 3 horas
-                });
+                };
+                res.cookie('token', token, cookieOptions);
 
                 res.status(201).json({ message: 'Usuario creado correctamente', token, user: { _id: newUser._id, username: newUser.username, email: newUser.email } });
     } catch (error) {
@@ -86,13 +88,14 @@ router.post('/login', async (req, res) => {
         // Generar token
         const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
 
-        // Set cookie httpOnly
-        res.cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 3 * 60 * 60 * 1000, // 3 horas
-        });
+                // Set cookie httpOnly
+                const cookieOptions = {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+                    maxAge: 3 * 60 * 60 * 1000, // 3 horas
+                };
+                res.cookie('token', token, cookieOptions);
 
         res.status(200).json({
             message: 'Login exitoso',
@@ -142,6 +145,7 @@ router.get('/me', require('../middleware/auth'), async (req, res) => {
 
 // Endpoint de logout (borra cookie)
 router.post('/logout', (req, res) => {
-    res.clearCookie('token', { httpOnly: true, sameSite: 'lax' });
+    const cookieOptions = { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' };
+    res.clearCookie('token', cookieOptions);
     return res.json({ message: 'Logged out' });
 });
