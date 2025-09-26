@@ -127,3 +127,21 @@ router.post('/reset-password', async (req, res) => {
 });
 
 module.exports = router;
+
+// Endpoint para obtener información del usuario autenticado (desde cookie o token)
+router.get('/me', require('../middleware/auth'), async (req, res) => {
+    try {
+        const user = await User.findById(req.userId).select('-password');
+        if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+        res.json({ user });
+    } catch (error) {
+        console.error('Error en /me:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+});
+
+// Endpoint de logout (borra cookie)
+router.post('/logout', (req, res) => {
+    res.clearCookie('token', { httpOnly: true, sameSite: 'lax' });
+    return res.json({ message: 'Logged out' });
+});
