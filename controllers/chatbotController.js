@@ -1,7 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-// Inicializar Gemini AI (usando la misma API Key que funciona en la app móvil)
-const genAI = new GoogleGenerativeAI('AIzaSyAubCSX50q81Ehn66l3rnsxTvLr8E2DaE8');
+// Inicializar Gemini AI (usando la nueva API Key de Google Cloud Console)
+const genAI = new GoogleGenerativeAI('AIzaSyCnShbp50cLI5USb_HHjGuk3YLkBNnZ8C4');
 
 const systemPrompt = `
 Eres SynapBot, un asistente virtual experto en el funcionamiento de la plataforma web SynapLink. Siempre responde en español, de forma amable, clara y directa. Tu objetivo es guiar a los usuarios para que puedan reservar cabinas de internet y aprovechar al máximo los beneficios desde la versión web.
@@ -89,9 +89,9 @@ exports.sendMessage = async (req, res) => {
       return res.status(400).json({ error: 'El mensaje es requerido' });
     }
 
-    // Configurar el modelo (igual que en la app móvil)
+    // Configurar el modelo (mismo que la app móvil: gemini-1.5-flash)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-pro',
+      model: 'gemini-1.5-flash',
       systemInstruction: systemPrompt
     });
 
