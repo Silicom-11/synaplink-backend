@@ -30,6 +30,8 @@ app.use('/api/auth', require('./routes/authRoutes'));
 
 app.use('/api/reservas', require('./routes/reservasRoutes'));
 
+app.use('/api/chatbot', require('./routes/chatbotRoutes'));
+
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
