@@ -72,7 +72,7 @@ router.get('/cabinas-disponibles', async (req, res) => {
 // Reservar cabinas temporalmente (mientras se procesa el pago)
 router.post('/reservar-temporal', authMiddleware, async (req, res) => {
   try {
-    const { userId, cabinas, fechaInicio, fechaFin, precio } = req.body;
+    const { userId, cabinas, fechaInicio, fechaFin, precio, duracionMinutos } = req.body;
     
     // Verificar que el usuario existe
     const usuario = await User.findById(userId);
@@ -93,6 +93,28 @@ router.post('/reservar-temporal', authMiddleware, async (req, res) => {
       });
     }
 
+    // Calcular puntos
+    const puntosBase = {
+      'S/1': 1, 'S/2': 2, 'S/5': 6, 'S/10': 12
+    };
+    const puntosGanados = (puntosBase[precio] || 0) * cabinas.length;
+
+    // Crear la reserva en la base de datos
+    const nuevaReserva = new Reserva({
+      usuario: userId,
+      cabinas,
+      cybercafe: 'Silicom Lan Center', // Por ahora hardcoded, después lo haremos dinámico
+      fechaInicio: new Date(fechaInicio),
+      fechaFin: new Date(fechaFin),
+      precio,
+      duracionMinutos: duracionMinutos || 60,
+      puntosGanados,
+      estado: 'Activo', // Cambiado de 'Pagado' a 'Activo' para que aparezca en la lista
+      metodoPago: 'Yape' // Default
+    });
+
+    await nuevaReserva.save();
+
     // Reservar temporalmente las cabinas
     await Cabina.updateMany(
       { numero: { $in: cabinas } },
@@ -104,9 +126,15 @@ router.post('/reservar-temporal', authMiddleware, async (req, res) => {
       }
     );
 
+    // Actualizar puntos del usuario
+    await User.findByIdAndUpdate(userId, { 
+      $inc: { puntos: puntosGanados }
+    });
+
     res.json({
       success: true,
-      message: 'Cabinas reservadas temporalmente',
+      message: 'Reserva creada exitosamente',
+      reserva: nuevaReserva,
       cabinasReservadas: cabinas
     });
   } catch (error) {
