@@ -103,9 +103,9 @@ exports.sendMessage = async (req, res) => {
       return res.status(400).json({ error: 'El mensaje es requerido' });
     }
 
-    // Configurar el modelo (volvemos a gemini-1.5-flash que funcionaba)
+    // Configurar el modelo - usando gemini-2.5-flash (estable, June 2025)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       systemInstruction: systemPrompt
     });
 
