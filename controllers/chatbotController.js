@@ -89,9 +89,9 @@ exports.sendMessage = async (req, res) => {
       return res.status(400).json({ error: 'El mensaje es requerido' });
     }
 
-    // Configurar el modelo (mismo que la app móvil: gemini-1.5-flash)
+    // Configurar el modelo (usando gemini-pro que está disponible)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-pro',
       systemInstruction: systemPrompt
     });
 
