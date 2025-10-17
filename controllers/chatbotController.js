@@ -107,9 +107,12 @@ exports.sendMessage = async (req, res) => {
 
   } catch (error) {
     console.error('Error en chatbot:', error);
+    console.error('Error completo:', JSON.stringify(error, null, 2));
     res.status(500).json({ 
       error: 'Error al procesar el mensaje',
-      details: error.message 
+      details: error.message,
+      errorType: error.constructor.name,
+      status: error.status || 500
     });
   }
 };
