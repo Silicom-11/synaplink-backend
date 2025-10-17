@@ -80,6 +80,20 @@ Ejemplos:
 Recuerda: siempre responde en español y con información 100% alineada a lo que ofrece la plataforma web SynapLink.
 `;
 
+// Controlador para listar modelos disponibles
+exports.listModels = async (req, res) => {
+  try {
+    const response = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models?key=AIzaSyCnShbp50cLI5USb_HHjGuk3YLkBNnZ8C4'
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error listando modelos:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Controlador para el chatbot
 exports.sendMessage = async (req, res) => {
   try {
