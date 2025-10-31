@@ -16,8 +16,23 @@ mongoose.connect(process.env.MONGODB_URI, {
   .catch((err) => console.error('❌ Error de conexión a MongoDB:', err));
 
 // CORS - permitir credenciales (cookies) desde el frontend
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://synaplink-web.vercel.app',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // Permitir peticiones sin origin (como Postman, apps móviles)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
   credentials: true,
 };
 
