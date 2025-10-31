@@ -22,11 +22,11 @@ async function testGeminiAPI() {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     console.log('✅ GoogleGenerativeAI inicializado correctamente');
 
-    // Configurar modelo
+    // Configurar modelo - usando gemini-2.5-flash (mejor límite: 250 req/día)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.5-flash',
     });
-    console.log('✅ Modelo gemini-2.0-flash-exp configurado');
+    console.log('✅ Modelo gemini-2.5-flash configurado');
     console.log('');
 
     // Enviar mensaje de prueba
