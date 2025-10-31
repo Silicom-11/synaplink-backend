@@ -1,34 +1,48 @@
 # 🤖 Configuración de Gemini AI API Key
 
-## Paso 1: Crear API Key en Google Cloud Console
+> ⚠️ **ACTUALIZACIÓN OCTUBRE 2024**: Ahora usamos Google AI Studio (GRATIS) en lugar de Google Cloud Platform.
+
+## ⭐ Método RECOMENDADO: Google AI Studio (GRATIS)
+
+### ✅ Ventajas:
+- 🆓 **100% GRATUITO** (sin tarjeta de crédito)
+- ⚡ **Setup en 2 minutos**
+- 🎯 **60 requests/minuto, 1500/día** (suficiente para producción)
+- 🔒 **Sin riesgo de cargos inesperados**
+- 🎓 **Perfecto para estudiantes y proyectos personales**
+
+### Paso 1.1: Crear API Key en Google AI Studio
+
+1. **Ve a**: https://aistudio.google.com/app/apikey
+2. **Inicia sesión** con tu Gmail
+3. Click en **"Create API Key"**
+4. Selecciona **"Create API key in new project"**
+5. ✅ **¡Listo!** Copia tu API key (empieza con `AIza...`)
+
+### Paso 1.2: Guardar la API Key
+- ⚠️ Guárdala en un lugar seguro (es como una contraseña)
+- ✅ Debe empezar con `AIza...`
+- ✅ Tiene aprox. 39 caracteres
+
+---
+
+## 🏢 Método Alternativo: Google Cloud Platform (Requiere tarjeta)
+
+> ⚠️ Solo usa este método si necesitas límites mayores a 1500 req/día
 
 ### 1.1 Acceder al proyecto
-- Ve a: https://console.cloud.google.com/welcome?project=synaplink-19c72
+- Ve a: https://console.cloud.google.com/
 
 ### 1.2 Habilitar la API de Gemini
 1. En el menú lateral, busca "**APIs y servicios**" → "**Biblioteca**"
-2. O ve directo a: https://console.cloud.google.com/apis/library?project=synaplink-19c72
-3. Busca "**Generative Language API**" o "**Gemini API**"
-4. Click en "**HABILITAR**" (si no está ya habilitada)
+2. Busca "**Generative Language API**" o "**Gemini API**"
+3. Click en "**HABILITAR**"
 
 ### 1.3 Crear la API Key
 1. Ve a "**APIs y servicios**" → "**Credenciales**"
-2. O directo: https://console.cloud.google.com/apis/credentials?project=synaplink-19c72
-3. Click en "**+ CREAR CREDENCIALES**" (arriba)
-4. Selecciona "**Clave de API**"
-5. Se generará automáticamente
-
-### 1.4 Configurar restricciones (IMPORTANTE para seguridad)
-1. Click en la API Key recién creada para editarla
-2. Dale un nombre descriptivo: "**SynapLink Backend API**"
-3. En "**Restricciones de la aplicación**":
-   - Selecciona "**Direcciones IP**" para mayor seguridad
-   - O "**Ninguna**" para pruebas rápidas (menos seguro)
-4. En "**Restricciones de API**":
-   - Selecciona "**Restringir clave**"
-   - Marca solo "**Generative Language API**"
-5. Click en "**GUARDAR**"
-6. **COPIA LA API KEY** (algo como: AIzaSy...)
+2. Click en "**+ CREAR CREDENCIALES**"
+3. Selecciona "**Clave de API**"
+4. **COPIA LA API KEY**
 
 ---
 
