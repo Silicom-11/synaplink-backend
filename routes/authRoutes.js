@@ -6,7 +6,7 @@ const User = require('../models/User');
 const authController = require('../controllers/authController');
 const { loginWithGoogle } = require('../controllers/authController');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwt';
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES = process.env.JWT_EXPIRES || '3h';
 
 // Ruta: Login con Google
