@@ -15,17 +15,17 @@ const cabinaSchema = new mongoose.Schema({
     min: 1
   },
   
-  // Referencia al cybercafé (relación)
+  // Referencia al cybercafé (relación) - opcional para compatibilidad
   cybercafe: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Cybercafe',
-    required: true
+    default: null
   },
   
   // Slug del cybercafé para consultas rápidas
   cybercafeSlug: {
     type: String,
-    required: true
+    default: 'silicom-lan-center'
   },
   
   // Estado actual de la cabina

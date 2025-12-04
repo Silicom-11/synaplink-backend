@@ -195,7 +195,7 @@ router.get('/cabinas', async (req, res) => {
   try {
     const { cybercafe } = req.query;
     
-    let filtro = { operativa: true };
+    let filtro = {};
     if (cybercafe) {
       filtro.cybercafeSlug = cybercafe;
     }
