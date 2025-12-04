@@ -1,5 +1,4 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { findCachedResponse, recordCacheHit, getCacheStats } = require('../utils/faqCache');
 
 // Inicializar Gemini AI desde variables de entorno (Google AI Studio - FREE)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -95,7 +94,7 @@ exports.listModels = async (req, res) => {
   }
 };
 
-// Controlador para el chatbot con caché de FAQs
+// Controlador para el chatbot - Usa Gemini AI directamente
 exports.sendMessage = async (req, res) => {
   try {
     const { message } = req.body;
@@ -104,26 +103,11 @@ exports.sendMessage = async (req, res) => {
       return res.status(400).json({ error: 'El mensaje es requerido' });
     }
 
-    // 1. Primero buscar en caché (GRATIS, no consume API)
-    const cachedResponse = findCachedResponse(message);
-    
-    if (cachedResponse) {
-      recordCacheHit(true);
-      console.log('✅ Respuesta desde caché (no consume API)');
-      return res.json({ 
-        success: true, 
-        reply: cachedResponse,
-        cached: true // Indicador para debug
-      });
-    }
-
-    // 2. Si no está en caché, usar Gemini AI (consume 1 request)
-    recordCacheHit(false);
     console.log('🤖 Consultando Gemini AI...');
 
-    // Configurar el modelo - usando gemini-2.5-flash (mejor límite: 250 req/día)
+    // Configurar el modelo - usando gemini-2.0-flash (GRATUITO: 1500 req/día)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       systemInstruction: systemPrompt
     });
 
@@ -134,8 +118,7 @@ exports.sendMessage = async (req, res) => {
 
     res.json({ 
       success: true, 
-      reply: reply || 'Lo siento, no entendí 😕',
-      cached: false
+      reply: reply || 'Lo siento, no entendí 😕'
     });
 
   } catch (error) {
@@ -150,12 +133,12 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
-// Nuevo endpoint para ver estadísticas de caché
+// Endpoint de health check
 exports.getCacheStats = (req, res) => {
-  const stats = getCacheStats();
   res.json({
     success: true,
-    stats,
-    message: `${stats.hitRate} de las consultas se responden desde caché (sin consumir API)`
+    model: 'gemini-2.0-flash',
+    status: 'active',
+    message: 'SynapBot está funcionando correctamente'
   });
 };
