@@ -53,7 +53,7 @@ exports.login = async (req, res) => {
     if (!valid) return res.status(401).json({ msg: 'Contraseña incorrecta' });
 
     const token = jwt.sign({ id: user._id }, JWT_SECRET, {
-      expiresIn: '3h',
+      expiresIn: '7d',
     });
 
     res.status(200).json({ token, userId: user._id, email: user.email });
@@ -145,7 +145,7 @@ exports.loginWithGoogle = async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id }, JWT_SECRET, {
-      expiresIn: '3h',
+      expiresIn: '7d',
     });
 
     console.log('🎉 Login successful, sending response for user:', user.email);

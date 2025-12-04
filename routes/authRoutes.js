@@ -7,7 +7,7 @@ const authController = require('../controllers/authController');
 const { loginWithGoogle } = require('../controllers/authController');
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES = process.env.JWT_EXPIRES || '3h';
+const JWT_EXPIRES = process.env.JWT_EXPIRES || '7d';
 
 // Ruta: Login con Google
 router.post('/google', loginWithGoogle);
