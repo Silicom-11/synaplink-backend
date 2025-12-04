@@ -318,6 +318,84 @@ router.get('/cabinas-disponibles', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/reservas/check-disponibilidad
+ * Verificar disponibilidad de cabinas para una fecha/hora específica
+ * Permite reservar cabinas "ocupadas" en horarios libres
+ */
+router.post('/check-disponibilidad', async (req, res) => {
+  try {
+    const { fecha, cabinas = [], duracion = 60 } = req.body;
+    
+    if (!fecha) {
+      return res.status(400).json({ error: 'Fecha es requerida' });
+    }
+    
+    const fechaConsulta = new Date(fecha);
+    const fechaInicio = new Date(fechaConsulta.setHours(0, 0, 0, 0));
+    const fechaFin = new Date(fechaConsulta.setHours(23, 59, 59, 999));
+    
+    // Buscar todas las reservas para ese día
+    const reservasDelDia = await Reserva.find({
+      'horario.inicio': { $gte: fechaInicio, $lte: fechaFin },
+      estado: { $in: ['Activa', 'Pendiente', 'EnCurso'] }
+    });
+    
+    // Crear mapa de slots ocupados por cabina
+    const occupiedSlots = {};
+    const allUnavailableSlots = new Set();
+    
+    for (const reserva of reservasDelDia) {
+      for (const cabina of reserva.cabinas) {
+        if (!occupiedSlots[cabina.numero]) {
+          occupiedSlots[cabina.numero] = [];
+        }
+        
+        // Generar slots de 30 min ocupados para esta reserva
+        const inicio = new Date(reserva.horario.inicio);
+        const fin = new Date(reserva.horario.fin);
+        
+        let current = new Date(inicio);
+        while (current < fin) {
+          const slotTime = `${current.getHours().toString().padStart(2, '0')}:${current.getMinutes().toString().padStart(2, '0')}`;
+          occupiedSlots[cabina.numero].push(slotTime);
+          
+          // Si la cabina está en la lista de consulta, agregar a unavailable
+          if (cabinas.includes(cabina.numero)) {
+            allUnavailableSlots.add(slotTime);
+          }
+          
+          current = new Date(current.getTime() + 30 * 60 * 1000); // +30 min
+        }
+      }
+    }
+    
+    // Convertir Set a Array para las cabinas consultadas
+    let unavailableSlots = [];
+    if (cabinas.length > 0) {
+      // Encontrar slots donde TODAS las cabinas seleccionadas están ocupadas
+      // (Si una está libre, el usuario puede reservar)
+      const slotsOcupadosPorCabina = cabinas.map(num => new Set(occupiedSlots[num] || []));
+      
+      // Un slot es no disponible si TODAS las cabinas lo tienen ocupado
+      // Pero para simplificar, mostramos slots donde AL MENOS UNA cabina está ocupada
+      unavailableSlots = Array.from(allUnavailableSlots);
+    }
+    
+    res.json({
+      success: true,
+      fecha: fecha,
+      occupiedSlots,
+      unavailableSlots: unavailableSlots.sort(),
+      reservasDelDia: reservasDelDia.length
+    });
+    
+  } catch (error) {
+    console.error('Error checking disponibilidad:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ═══════════════════════════════════════════════════════════
 // 📋 RESERVAS
 // ═══════════════════════════════════════════════════════════
