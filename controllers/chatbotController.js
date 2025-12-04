@@ -51,9 +51,9 @@ Eres SynapBot, un asistente virtual inteligente y amigable creado para la plataf
 
 | Precio | Tiempo | Puntos | Beneficio Extra |
 |--------|--------|--------|-----------------|
+| S/1    | 30 min | 1 pts  | 1 snack pequeño |
 | S/2    | 1 hora | 2 pts  | 1 vaso Pepsi (250ml) |
-| S/5    | 2 horas| 6 pts  | 1 Pepsi (500ml) |
-| S/10   | 3 horas| 12 pts | 1 Pepsi (1L) + Cuates |
+| S/5    | 3 horas| 6 pts  | 1 Pepsi (500ml)  |
 
 - Los puntos se multiplican por cantidad de cabinas
 - Pago exclusivo con Yape (código QR al llegar)
