@@ -671,6 +671,22 @@ router.post('/reservar-temporal', authMiddleware, async (req, res) => {
     const puntosGanados = planInfo.puntosBase * cabinas.length;
     const precioTotal = parseInt(plan.replace('S/', '')) * cabinas.length;
     
+    // Buscar o crear el Cybercafe
+    let cybercafeDoc = await Cybercafe.findOne({ slug: 'silicom-lan-center' });
+    if (!cybercafeDoc) {
+      cybercafeDoc = await Cybercafe.findOne({});
+    }
+    if (!cybercafeDoc) {
+      // Crear cybercafe por defecto si no existe
+      cybercafeDoc = new Cybercafe({
+        nombre: 'Silicom Lan Center',
+        slug: 'silicom-lan-center',
+        direccion: { calle: 'Centro', ciudad: 'Lima', pais: 'Perú' },
+        estado: 'Activo'
+      });
+      await cybercafeDoc.save();
+    }
+    
     // Generar código único de reserva
     const fecha = new Date();
     const dia = fecha.getDate().toString().padStart(2, '0');
@@ -682,6 +698,7 @@ router.post('/reservar-temporal', authMiddleware, async (req, res) => {
     // CREAR RESERVA EN LA BASE DE DATOS
     const nuevaReserva = new Reserva({
       usuario: userId,
+      cybercafe: cybercafeDoc._id,
       cybercafeSlug: 'silicom-lan-center',
       cybercafeNombre: cybercafe || 'Silicom Lan Center',
       cabinas: cabinas.map((num, idx) => ({
