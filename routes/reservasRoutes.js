@@ -681,7 +681,14 @@ router.post('/reservar-temporal', authMiddleware, async (req, res) => {
       cybercafeDoc = new Cybercafe({
         nombre: 'Silicom Lan Center',
         slug: 'silicom-lan-center',
-        direccion: { calle: 'Centro', ciudad: 'Lima', pais: 'Perú' },
+        direccion: { 
+          calle: 'Av. Principal 123', 
+          distrito: 'El Tambo',
+          ciudad: 'Huancayo', 
+          region: 'Junín',
+          pais: 'Perú' 
+        },
+        totalCabinas: 12,
         estado: 'Activo'
       });
       await cybercafeDoc.save();
