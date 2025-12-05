@@ -43,9 +43,9 @@ router.post('/consultar-dni', async (req, res) => {
       });
     }
     
-    // Si hay token configurado, usar API real
+    // Si hay token configurado, usar API real de Decolecta
     if (RENIEC_TOKEN) {
-      const url = `https://api.apis.net.pe/v2/reniec/dni?numero=${dni}`;
+      const url = `https://api.decolecta.com/v1/reniec/dni?numero=${dni}`;
       
       const response = await fetch(url, {
         method: 'GET',
@@ -57,22 +57,23 @@ router.post('/consultar-dni', async (req, res) => {
       
       const data = await response.json();
       
-      if (data.nombres) {
+      // Decolecta usa campos diferentes
+      if (data.first_name) {
         return res.json({
           success: true,
           datos: {
-            dni: dni,
-            nombres: data.nombres,
-            apellidoPaterno: data.apellidoPaterno,
-            apellidoMaterno: data.apellidoMaterno,
-            nombreCompleto: `${data.nombres} ${data.apellidoPaterno} ${data.apellidoMaterno}`
+            dni: data.document_number || dni,
+            nombres: data.first_name,
+            apellidoPaterno: data.first_last_name,
+            apellidoMaterno: data.second_last_name,
+            nombreCompleto: `${data.first_name} ${data.first_last_name} ${data.second_last_name}`
           },
-          fuente: 'RENIEC (API Real)'
+          fuente: 'RENIEC (Decolecta API)'
         });
       } else {
         return res.status(404).json({
           success: false,
-          message: data.message || 'No se encontraron datos para el DNI ingresado'
+          message: data.message || data.error || 'No se encontraron datos para el DNI ingresado'
         });
       }
     }
