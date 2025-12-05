@@ -47,6 +47,8 @@ app.use('/api/reservas', require('./routes/reservasRoutes'));
 
 app.use('/api/chatbot', require('./routes/chatbotRoutes'));
 
+app.use('/api/reniec', require('./routes/reniecRoutes'));
+
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
