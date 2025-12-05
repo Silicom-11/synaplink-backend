@@ -1068,4 +1068,29 @@ router.post('/limpiar-corruptas', async (req, res) => {
   }
 });
 
+/**
+ * DELETE /api/reservas/admin/limpiar-todas
+ * Eliminar TODAS las reservas (uso administrativo)
+ */
+router.delete('/admin/limpiar-todas', async (req, res) => {
+  try {
+    const resultado = await Reserva.deleteMany({});
+    
+    // También liberar todas las cabinas
+    await Cabina.updateMany({}, { 
+      estado: 'Libre',
+      reservaActual: null,
+      usuario_actual: null
+    });
+    
+    res.json({ 
+      success: true, 
+      message: `${resultado.deletedCount} reservas eliminadas. Todas las cabinas liberadas.`,
+      eliminadas: resultado.deletedCount
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
