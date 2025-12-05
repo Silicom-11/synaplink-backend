@@ -985,4 +985,87 @@ router.post('/limpiar-cabinas', async (req, res) => {
   }
 });
 
+/**
+ * DELETE /api/reservas/eliminar/:reservaId
+ * Eliminar una reserva específica
+ */
+router.delete('/eliminar/:reservaId', authMiddleware, async (req, res) => {
+  try {
+    const { reservaId } = req.params;
+    
+    const reserva = await Reserva.findById(reservaId);
+    if (!reserva) {
+      return res.status(404).json({ error: 'Reserva no encontrada' });
+    }
+    
+    // Liberar cabinas asociadas
+    if (reserva.cabinas && reserva.cabinas.length > 0) {
+      const cabinasNums = reserva.cabinas.map(c => c.numero).filter(n => n);
+      if (cabinasNums.length > 0) {
+        await Cabina.updateMany(
+          { numero: { $in: cabinasNums } },
+          { estado: 'Libre', reservaActiva: null, usuarioActual: null }
+        );
+      }
+    }
+    
+    await Reserva.findByIdAndDelete(reservaId);
+    
+    res.json({ success: true, message: 'Reserva eliminada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /api/reservas/limpiar-corruptas
+ * Eliminar reservas con datos inválidos (sin código, cabinas rotas, etc.)
+ */
+router.post('/limpiar-corruptas', async (req, res) => {
+  try {
+    // Encontrar reservas sin código o con cabinas mal formateadas
+    const reservas = await Reserva.find({});
+    let eliminadas = 0;
+    
+    for (const reserva of reservas) {
+      let esCorrupta = false;
+      
+      // Sin código
+      if (!reserva.codigo) esCorrupta = true;
+      
+      // Cabinas con ObjectId en lugar de número
+      if (reserva.cabinas && reserva.cabinas.length > 0) {
+        const primeraCabina = reserva.cabinas[0];
+        if (primeraCabina && typeof primeraCabina === 'object' && !primeraCabina.numero) {
+          esCorrupta = true;
+        }
+      }
+      
+      // Reserva muy vieja (más de 24 horas) y sin completar
+      if (reserva.horario?.fin) {
+        const finReserva = new Date(reserva.horario.fin);
+        const ahora = new Date();
+        const horasPasadas = (ahora - finReserva) / (1000 * 60 * 60);
+        if (horasPasadas > 24 && reserva.estado !== 'Completada') {
+          reserva.estado = 'Completada';
+          await reserva.save();
+        }
+      }
+      
+      if (esCorrupta) {
+        await Reserva.findByIdAndDelete(reserva._id);
+        eliminadas++;
+      }
+    }
+    
+    res.json({ 
+      success: true, 
+      message: `${eliminadas} reservas corruptas eliminadas`,
+      eliminadas 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
