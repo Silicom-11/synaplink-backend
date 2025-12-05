@@ -608,11 +608,11 @@ router.post('/crear', authMiddleware, async (req, res) => {
 
 /**
  * POST /api/reservas/reservar-temporal
- * Endpoint de COMPATIBILIDAD con app anterior
+ * Endpoint de COMPATIBILIDAD con app anterior - AHORA CREA RESERVA REAL
  */
 router.post('/reservar-temporal', authMiddleware, async (req, res) => {
   try {
-    const { userId, cabinas, precio, duracionMinutos, fechaInicio, fechaFin } = req.body;
+    const { userId, cabinas, cybercafe, precio, duracionMinutos, fechaInicio, fechaFin } = req.body;
     
     // Mapear precio a plan
     const mapeoPrecios = {
@@ -639,7 +639,6 @@ router.post('/reservar-temporal', authMiddleware, async (req, res) => {
     
     // Si no hay cabinas en el nuevo modelo, buscar en formato legacy o crearlas
     if (cabinasDB.length === 0) {
-      // Crear cabinas básicas si no existen
       for (const num of cabinas) {
         let cabina = await Cabina.findOne({ numero: num });
         if (!cabina) {
@@ -670,11 +669,66 @@ router.post('/reservar-temporal', authMiddleware, async (req, res) => {
     
     // Calcular puntos
     const puntosGanados = planInfo.puntosBase * cabinas.length;
+    const precioTotal = parseInt(plan.replace('S/', '')) * cabinas.length;
+    
+    // Generar código único de reserva
+    const fecha = new Date();
+    const dia = fecha.getDate().toString().padStart(2, '0');
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+    const anio = fecha.getFullYear().toString().slice(-2);
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const codigoReserva = `SL${dia}${mes}${anio}${random}`;
+    
+    // CREAR RESERVA EN LA BASE DE DATOS
+    const nuevaReserva = new Reserva({
+      usuario: userId,
+      cybercafeSlug: 'silicom-lan-center',
+      cybercafeNombre: cybercafe || 'Silicom Lan Center',
+      cabinas: cabinas.map((num, idx) => ({
+        numero: num,
+        cabinaId: cabinasDB[idx]?._id
+      })),
+      cantidadCabinas: cabinas.length,
+      codigo: codigoReserva,
+      plan: plan,
+      precio: {
+        unitario: parseInt(plan.replace('S/', '')),
+        total: precioTotal
+      },
+      duracion: {
+        minutos: duracionMinutos || planInfo.duracionMinutos,
+        texto: `${duracionMinutos || planInfo.duracionMinutos} min`
+      },
+      horario: {
+        inicio: ahora,
+        fin: horaFin
+      },
+      puntos: {
+        base: planInfo.puntosBase,
+        porCabina: puntosGanados,
+        total: puntosGanados,
+        otorgados: true
+      },
+      beneficio: {
+        descripcion: planInfo.beneficio,
+        emoji: planInfo.beneficioEmoji || '🎁'
+      },
+      estado: 'Activa',
+      pago: {
+        metodo: 'Yape',
+        confirmado: true,
+        fechaPago: new Date()
+      }
+    });
+    
+    await nuevaReserva.save();
+    console.log('✅ Reserva creada:', codigoReserva);
     
     // Actualizar cabinas
     for (const cabina of cabinasDB) {
       cabina.estado = 'Reservada';
       cabina.usuarioActual = userId;
+      cabina.reservaActiva = nuevaReserva._id;
       cabina.sesionActual = {
         inicio: ahora,
         fin: horaFin
@@ -685,26 +739,40 @@ router.post('/reservar-temporal', authMiddleware, async (req, res) => {
     // Actualizar puntos del usuario
     if (usuario.puntos && typeof usuario.puntos.actuales === 'number') {
       usuario.puntos.actuales += puntosGanados;
+      usuario.puntos.totalesGanados = (usuario.puntos.totalesGanados || 0) + puntosGanados;
     } else {
       usuario.points = (usuario.points || 0) + puntosGanados;
     }
+    
+    // Actualizar estadísticas
+    if (usuario.estadisticas) {
+      usuario.estadisticas.totalReservas = (usuario.estadisticas.totalReservas || 0) + 1;
+      usuario.estadisticas.ultimaReserva = new Date();
+    }
+    
     await usuario.save();
     
     res.json({
       success: true,
       message: 'Reserva creada exitosamente',
+      codigo: codigoReserva,
+      reservaId: nuevaReserva._id,
       reserva: {
+        _id: nuevaReserva._id,
+        codigo: codigoReserva,
         cabinas,
         horaInicio: ahora,
         horaFin,
         precio: plan,
-        puntosGanados
+        precioTotal: `S/${precioTotal}`,
+        puntosGanados,
+        beneficio: planInfo.beneficio
       },
       cabinasReservadas: cabinas
     });
     
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error en reservar-temporal:', error);
     res.status(500).json({ error: error.message });
   }
 });
