@@ -116,7 +116,13 @@ const userSchema = new mongoose.Schema({
     verificacion: { type: String, default: null },
     recuperacion: { type: String, default: null },
     expiracionRecuperacion: { type: Date, default: null }
-  }
+  },
+  
+  // Campos legacy para compatibilidad con la app móvil
+  firstName: { type: String, default: null },
+  lastName: { type: String, default: null },
+  gender: { type: String, default: null },
+  birthDate: { type: Date, default: null }
   
 }, {
   timestamps: true

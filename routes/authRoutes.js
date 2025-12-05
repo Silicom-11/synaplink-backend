@@ -40,12 +40,21 @@ router.post('/register', async (req, res) => {
 
         const newUser = new User({
             username,
+            email,
+            password: hashedPassword,
+            // Mapear a la estructura del modelo
+            perfil: {
+                nombre: firstName,
+                apellido: lastName,
+                nombreCompleto: `${firstName} ${lastName}`,
+                genero: gender || 'Prefiero no decir',
+                fechaNacimiento: birthDate ? new Date(birthDate) : null
+            },
+            // Campos legacy para compatibilidad
             firstName,
             lastName,
             gender,
-            birthDate,
-            email,
-            password: hashedPassword
+            birthDate: birthDate ? new Date(birthDate) : null
         });
 
                 await newUser.save();
